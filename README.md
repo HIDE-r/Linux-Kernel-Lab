@@ -1,6 +1,6 @@
 # ARM64 Linux Kernel Test Environment
 
-This project provides a Docker-based environment for compiling the ARM64 Linux kernel. It simplifies the setup process by providing a pre-configured Docker image with all the necessary tools and dependencies.
+This project provides a Docker-based environment for compiling the Linux kernel. It simplifies the setup process by providing a pre-configured Docker image with all the necessary tools and dependencies.
 
 ## Prerequisites
 
@@ -13,10 +13,14 @@ This project provides a Docker-based environment for compiling the ARM64 Linux k
 
 This project uses a `.envrc` file to manage environment variables. You can either use `direnv` to load it automatically, or source it manually.
 
-Create a `.envrc` file in the project root with the following content:
+Create a `.envrc` file in the project root with the following content.
 
 ```bash
-export DOCKER_IAMGE=arm64-kernel-builder
+export ARCH=arm64
+export DOCKER_IAMGE=kernel_${ARCH}
+export PROJECT_DIR_PATH="$PWD"
+export DOCKERFILE=docker/Dockerfile
+export DOCKER_ENV_FILE=docker/docker_${ARCH}.env
 ```
 
 If you are using `direnv`, run `direnv allow` to load the environment variables.
