@@ -2,6 +2,9 @@ FROM ubuntu:24.04
 LABEL author="liaokangning <lkangn.collin@gmail.com>"
 LABEL describe="use for linux kernel"
 
+# Add build argument for target architecture
+ARG TARGET_ARCH
+
 # 设置时区
 ENV TZ=Asia/Shanghai
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
@@ -29,8 +32,6 @@ RUN apt-get update && apt-get install -y \
 	python3 \
 	bzip2 \
 	perl \
-	# arm64 交叉编译工具链
-	gcc-aarch64-linux-gnu \
 	# 优化编译
 	distcc \
 	ccache \
@@ -41,5 +42,16 @@ RUN apt-get update && apt-get install -y \
 	remake \
 && apt-get clean
 
-WORKDIR /
+# 根据架构安装交叉编译工具链
+RUN apt-get update && \
+    case ${TARGET_ARCH} in \
+        "arm64") \
+            apt-get install -y gcc-aarch64-linux-gnu ;; \
+        "riscv64") \
+            apt-get install -y gcc-riscv64-linux-gnu ;; \
+        *) \
+            echo "Unsupported architecture: ${TARGET_ARCH}"; exit 1 ;; \
+    esac && \
+    apt-get clean
 
+WORKDIR /
