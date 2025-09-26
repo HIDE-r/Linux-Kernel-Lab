@@ -40,6 +40,10 @@ RUN apt-get update && apt-get install -y \
 	iputils-ping \
 	# 调试工具
 	remake \
+	# 测试工具
+	qemu-system \
+	qemu-user \
+	qemu-utils \
 && apt-get clean
 
 # 根据架构安装交叉编译工具链
