@@ -6,8 +6,13 @@ ifeq ("$(origin V)", "command line")
   VERBOSE:=$(V)
 endif
 
+ifeq ($(NO_TRACE_MAKE),)
+NO_TRACE_MAKE := $(MAKE) V=s
+export NO_TRACE_MAKE
+endif
+
 ifeq ($(IS_TTY),1)
-  ifneq ($(strip $(NO_COLOR)),1)
+  ifeq ($(strip $(COLOR_TTY)),1)
     _Y:=\\033[33m
     _R:=\\033[31m
     _N:=\\033[m
@@ -38,7 +43,7 @@ ifeq ($(findstring s,$(VERBOSE)),)
   else
     SILENT:=>/dev/null 2>&1
     export QUIET:=1
-    SUBMAKE=cmd() { $(SILENT) $(MAKE) -s "$$@" < /dev/null || { echo "make $$*: build failed. Please re-run make with -j1 V=s for a higher verbosity level to see what's going on"; false; } } 8>&1 9>&2; cmd
+    SUBMAKE=cmd() { $(SILENT) $(MAKE) "$$@" < /dev/null || { printf "$(_R)make $$*: build failed.$(_N)\n" ; false; } } 8>&1 9>&2; cmd
   endif
 else
   SUBMAKE=$(MAKE) -w

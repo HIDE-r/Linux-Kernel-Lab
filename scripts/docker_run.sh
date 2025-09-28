@@ -14,7 +14,7 @@
 # 	./docker_run.sh make
 #
 
-VERBOSE=1
+VERBOSE=0
 
 # set -x
 
