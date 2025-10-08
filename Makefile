@@ -30,8 +30,9 @@ else
 # 真正的执行动作
 
 include $(MK_DIR)/kernel.mk
+include $(MK_DIR)/subdir.mk
 
-world: kernel
+world: $(platform/stamp-compile)
 
 prereq: build_check
 
