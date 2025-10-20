@@ -47,12 +47,24 @@ build_check: build_print
 		echo "Error: ARCH does not match .envrc"; exit 1; \
 	fi
 
-git_init:
-	$(Q) git submodule update --init --recursive
-	
-init: git_init
+scripts/config/%onf: CFLAGS+= -O2
+scripts/config/%onf: FORCE
+	$(Q) $(_SINGLE) $(SUBMAKE) $(if $(findstring s,$(VERBOSE)),,-s) \
+		-C tools/config/src $(notdir $@)
+
+config: scripts/config/conf FORCE
+
+nconfig: scripts/config/nconf FORCE
+
+menuconfig: scripts/config/mconf FORCE
+
+init:
 
 dockerfile:
 	$(Q) docker build -f $(TOPDIR)/docker/Dockerfile --build-arg TARGET_ARCH=$(ARCH) -t linux-kernel-lab-$(ARCH) .
 
 endif
+
+FORCE:
+
+.PHONY: FORCE

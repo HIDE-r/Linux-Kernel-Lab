@@ -1,5 +1,5 @@
 kernel: 
-	$(Q)+ $(SUBMAKE) -C $(LINUX_DIR)
+	$(Q)+ $(SUBMAKE) -C $(LINUX_DIR) O=build/
 
 kernel_defconfig:
 	$(Q) $(SUBMAKE) -C $(LINUX_DIR) ARCH=$(ARCH) defconfig
