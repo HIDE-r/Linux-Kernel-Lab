@@ -5,6 +5,11 @@ BUSYBOX_DIR?=$(TOPDIR)/busybox
 SCRIPT_DIR:=$(TOPDIR)/scripts
 JOBS?=$(shell nproc)
 
+OUTPUT_DIR:=$(TOPDIR)/output
+
+# TODO: 待修改, ARCH 这个粒度还是太大了
+STAGING_DIR:=$(OUTPUT_DIR)/staging_dir/$(ARCH)
+
 EMPTY:=
 SPACE:= $(EMPTY) $(EMPTY)
 

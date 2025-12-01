@@ -19,6 +19,8 @@ PARALLEL_OR_QUIET=$(if $(BUILD_LOG),,$(or \
     $(filter-out -j1,$(filter -j%,$(MAKEFLAGS))), \
     $(if $(findstring s,$(VERBOSE)),,1)))
 
+# -r, --no-builtin-rules      Disable the built-in implicit rules.
+# -s, --silent, --quiet       Don't echo recipes.
 %::
 	$(Q)+ $(NO_TRACE_MAKE) -s -r prereq
 	$(Q)+ $(SUBMAKE) -s -r $@ $(if $(PARALLEL_OR_QUIET), || { \
@@ -31,6 +33,8 @@ else
 
 include $(MK_DIR)/kernel.mk
 include $(MK_DIR)/subdir.mk
+
+include platform/Makefile
 
 world: $(platform/stamp-compile)
 
