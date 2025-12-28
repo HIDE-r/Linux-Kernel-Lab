@@ -1,0 +1,8 @@
+menu "Global build settings"
+	config BUILD_QUIET
+		bool "build quietly"
+		default y
+	config BUILD_COLOR_TTY
+		bool "colorize build output if terminal supports it"
+		default y
+endmenu

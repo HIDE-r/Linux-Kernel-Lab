@@ -1,0 +1,16 @@
+
+mainmenu "Linux-Kernel-Lab"
+
+comment "Build Option"
+
+source "kconfig/Config-build.in"
+
+comment "Platform"
+
+choice
+	prompt "Platform"
+	config PLATFORM_LINUX_LATEST
+		bool "Linux latest"
+endchoice
+
+comment "Packages"

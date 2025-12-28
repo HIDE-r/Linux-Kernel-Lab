@@ -1,9 +1,9 @@
 TOPDIR=$(CURDIR)
 MK_DIR=$(TOPDIR)/makefiles
 
-include build.mk
 include $(MK_DIR)/rules.mk
 include $(MK_DIR)/verbose.mk
+include $(MK_DIR)/debug.mk
 
 world:
 
@@ -12,18 +12,18 @@ ifneq ($(LAB_BUILD),1)
   override LAB_BUILD=1
   export LAB_BUILD
 
-prereq::
-	$(Q)+ $(NO_TRACE_MAKE) -r -s $@
+# 放在第一遍构建, 防止menuconfig不加V=s时, 输出被重定向, 导致窗口显示不正常
+include $(MK_DIR)/config-menu.mk
+include $(MK_DIR)/prereq.mk
 
 PARALLEL_OR_QUIET=$(if $(BUILD_LOG),,$(or \
     $(filter-out -j1,$(filter -j%,$(MAKEFLAGS))), \
     $(if $(findstring s,$(VERBOSE)),,1)))
 
-# -r, --no-builtin-rules      Disable the built-in implicit rules.
-# -s, --silent, --quiet       Don't echo recipes.
 %::
-	$(Q)+ $(NO_TRACE_MAKE) -s -r prereq
-	$(Q)+ $(SUBMAKE) -s -r $@ $(if $(PARALLEL_OR_QUIET), || { \
+	$(Q) echo "##### build target = $@"
+	$(Q)$(R) $(PREP_MK) $(NO_TRACE_MAKE) $(MF_SILENT) $(MF_NO_BUILTIN_RULES) prereq
+	$(Q)$(R) $(SUBMAKE) $(MF_SILENT) $(MF_NO_BUILTIN_RULES) $@ $(if $(PARALLEL_OR_QUIET), || { \
 		printf "$(_R)Build failed - Please re-run make with -j1 V=s for a higher verbosity level to see the real error message$(_N)\n" >&2; \
 		false; \
 	})
@@ -31,6 +31,7 @@ PARALLEL_OR_QUIET=$(if $(BUILD_LOG),,$(or \
 else
 # 真正的执行动作
 
+-include $(TOPDIR)/.config
 include $(MK_DIR)/kernel.mk
 include $(MK_DIR)/subdir.mk
 
@@ -38,31 +39,13 @@ include platform/Makefile
 
 world: $(platform/stamp-compile)
 
-prereq: build_check
-
-build_print:
-	@ echo "********** ARCH=$(call SHELL_VAR,ARCH)"
-	@ echo "********** CROSS_COMPILE=$(call SHELL_VAR,CROSS_COMPILE)"
-	@ echo "********** TOPDIR=$(TOPDIR)"
-	@ echo ""
-
-build_check: build_print
-	$(Q) if [ "$(ARCH)" != "$$(cat .envrc | grep 'export ARCH=' | cut -d '=' -f 2)" ]; then \
-		echo "Error: ARCH does not match .envrc"; exit 1; \
+.config:
+	$(Q)$(R) if [ ! -e $(TOPDIR)/.config ]; then \
+		$(PREP_MK) $(NO_TRACE_MAKE) menuconfig; \
 	fi
 
-scripts/config/%onf: CFLAGS+= -O2
-scripts/config/%onf: FORCE
-	$(Q) $(_SINGLE) $(SUBMAKE) $(if $(findstring s,$(VERBOSE)),,-s) \
-		-C tools/config/src $(notdir $@)
-
-config: scripts/config/conf FORCE
-
-nconfig: scripts/config/nconf FORCE
-
-menuconfig: scripts/config/mconf FORCE
-
-init:
+disclean: FORCE
+	$(Q) rm -rf .config* output/ 
 
 dockerfile:
 	$(Q) docker build -f $(TOPDIR)/docker/Dockerfile --build-arg TARGET_ARCH=$(ARCH) -t linux-kernel-lab-$(ARCH) .

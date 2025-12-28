@@ -1,0 +1,17 @@
+include $(MK_DIR)/host-build.mk
+
+PKG_NAME:=config
+PKG_VERSION:=6.6.16
+
+prepare:
+	mkdir -p $(PKG_BUILD_PATH)
+	$(CP) src/* $(PKG_BUILD_PATH)
+
+compile: prepare
+	make -C $(PKG_BUILD_PATH)
+
+mconf/compile: prepare
+	make -C $(PKG_BUILD_PATH) mconf
+
+mconf/install: mconf/compile
+	install -D -m 0755 $(PKG_BUILD_PATH)/mconf/mconf $(HOST_BIN_DIR)/mconf
