@@ -14,3 +14,7 @@ menuconfig: scripts/config/mconf FORCE
 		$< Config.in ;\
 	if [ ! -f .config ]; then exit 1; fi
 
+.config:
+	$(Q)$(R) if [ ! -e $(TOPDIR)/.config ]; then \
+		$(PREP_MK) $(NO_TRACE_MAKE) menuconfig; \
+	fi

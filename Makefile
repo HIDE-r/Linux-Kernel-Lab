@@ -1,5 +1,6 @@
 TOPDIR=$(CURDIR)
 MK_DIR=$(TOPDIR)/makefiles
+export TOPDIR MK_DIR
 
 include $(MK_DIR)/rules.mk
 include $(MK_DIR)/verbose.mk
@@ -16,6 +17,13 @@ ifneq ($(LAB_BUILD),1)
 include $(MK_DIR)/config-menu.mk
 include $(MK_DIR)/prereq.mk
 
+dockerfile:
+	$(Q) docker build -f $(TOPDIR)/docker/Dockerfile --build-arg TARGET_ARCH=$(ARCH) -t linux-kernel-lab-$(ARCH) .
+
+disclean: FORCE
+	$(Q) make -C ./scripts/config clean
+	$(Q) rm -rf .config* output/
+
 PARALLEL_OR_QUIET=$(if $(BUILD_LOG),,$(or \
     $(filter-out -j1,$(filter -j%,$(MAKEFLAGS))), \
     $(if $(findstring s,$(VERBOSE)),,1)))
@@ -31,6 +39,7 @@ PARALLEL_OR_QUIET=$(if $(BUILD_LOG),,$(or \
 else
 # 真正的执行动作
 
+#  NOTE: 每一层make都会重新include这些文件
 -include $(TOPDIR)/.config
 include $(MK_DIR)/kernel.mk
 include $(MK_DIR)/subdir.mk
@@ -39,16 +48,6 @@ include platform/Makefile
 
 world: $(platform/stamp-compile)
 
-.config:
-	$(Q)$(R) if [ ! -e $(TOPDIR)/.config ]; then \
-		$(PREP_MK) $(NO_TRACE_MAKE) menuconfig; \
-	fi
-
-disclean: FORCE
-	$(Q) rm -rf .config* output/ 
-
-dockerfile:
-	$(Q) docker build -f $(TOPDIR)/docker/Dockerfile --build-arg TARGET_ARCH=$(ARCH) -t linux-kernel-lab-$(ARCH) .
 
 endif
 

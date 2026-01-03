@@ -1,4 +1,4 @@
-prereq: build_print ;
+prereq: build_print .config;
 
 build_check: 
 	$(Q) if [ -z "$(ARCH)" ]; then \
