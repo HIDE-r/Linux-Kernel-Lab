@@ -1,1 +1,7 @@
 .envrc
+.config
+output/
+
+scripts/config/*.o
+scripts/config/lxdialog/*.o
+scripts/config/mconf*
