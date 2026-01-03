@@ -8,7 +8,7 @@ JOBS?=$(shell nproc)
 OUTPUT_DIR:=$(TOPDIR)/output
 
 # TODO: 待修改, ARCH 这个粒度还是太大了
-STAGING_DIR:=$(OUTPUT_DIR)/staging_dir/
+STAGING_DIR:=$(OUTPUT_DIR)/staging_dir
 STAGING_DIR_BOARD:=$(STAGING_DIR)/$(ARCH)-$(BOARD)
 STAGING_DIR_ROOTFS:=$(STAGING_DIR_BOARD)/rootfs
 STAGING_DIR_HOST:=$(STAGING_DIR)/host
