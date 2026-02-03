@@ -1,5 +1,5 @@
 .envrc
-.config
+.config*
 output/
 
 scripts/config/*.o
