@@ -3,6 +3,7 @@ export IS_TTY=$(if $(MAKE_TERMOUT),1,0)
 LINUX_DIR?=$(TOPDIR)/linux
 BUSYBOX_DIR?=$(TOPDIR)/busybox
 SCRIPT_DIR:=$(TOPDIR)/scripts
+BOARD_DIR:=$(TOPDIR)/board
 JOBS?=$(shell nproc)
 
 OUTPUT_DIR:=$(TOPDIR)/output
@@ -16,6 +17,7 @@ BUILD_DIR:=$(OUTPUT_DIR)/build
 
 EMPTY:=
 SPACE:= $(EMPTY) $(EMPTY)
+SILENT:=>/dev/null 2>&1
 
 # @			command not echoed
 # +			command must be run even if -n is specified
@@ -28,6 +30,8 @@ MF_SILENT:=-s
 MF_NO_BUILTIN_RULES:=-r
 
 EMPTY_MF=export MAKEFLAGS=$(SPACE);
+NO_PRINT_DIR_MF=--no-print-directory
+
 PREP_MK= LAB_BUILD= QUIET=0
 
 COLOR_TTY:=1

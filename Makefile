@@ -20,7 +20,7 @@ include $(MK_DIR)/prereq.mk
 dockerfile:
 	$(Q) docker build -f $(TOPDIR)/docker/Dockerfile --build-arg TARGET_ARCH=$(ARCH) -t linux-kernel-lab-$(ARCH) .
 
-disclean: FORCE
+distclean: FORCE
 	$(Q) make -C ./scripts/config clean
 	$(Q) rm -rf .config* output/
 
@@ -29,8 +29,8 @@ PARALLEL_OR_QUIET=$(if $(BUILD_LOG),,$(or \
     $(if $(findstring s,$(VERBOSE)),,1)))
 
 %::
-	$(Q) echo "##### build target = $@"
 	$(Q)$(R) $(PREP_MK) $(NO_TRACE_MAKE) $(MF_SILENT) $(MF_NO_BUILTIN_RULES) prereq
+	$(Q) echo "##### build target = $@ #####"
 	$(Q)$(R) $(SUBMAKE) $(MF_SILENT) $(MF_NO_BUILTIN_RULES) $@ $(if $(PARALLEL_OR_QUIET), || { \
 		printf "$(_R)Build failed - Please re-run make with -j1 V=s for a higher verbosity level to see the real error message$(_N)\n" >&2; \
 		false; \
@@ -44,9 +44,10 @@ else
 include $(MK_DIR)/kernel.mk
 include $(MK_DIR)/subdir.mk
 
+include board/Makefile
 include platform/Makefile
 
-world: $(platform/stamp-compile)
+world: $(board/stamp-prepare) $(platform/stamp-compile)
 
 
 endif

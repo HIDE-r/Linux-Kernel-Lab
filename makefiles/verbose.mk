@@ -19,7 +19,13 @@ ifeq ($(IS_TTY),1)
   endif
 endif
 
-ifeq ($(findstring s,$(VERBOSE)),)
+ifeq ($(findstring s,$(VERBOSE)),s)
+  SUBMAKE=$(MAKE) -w
+
+  define MESSAGE
+    printf "%s\n" "$(1)"
+  endef
+else
   define MESSAGE
 	{ \
 		printf "$(_Y)%s$(_N)\n" "$(1)" >&8 || \
@@ -41,14 +47,7 @@ ifeq ($(findstring s,$(VERBOSE)),)
     endif
     SUBMAKE=$(MAKE)
   else
-    SILENT:=>/dev/null 2>&1
     export QUIET:=1
-    SUBMAKE=cmd() { $(SILENT) $(MAKE) "$$@" < /dev/null || { printf "$(_R)make $$*: build failed.$(_N)\n" ; false; } } 8>&1 9>&2; cmd
+    SUBMAKE=cmd() { $(SILENT) $(MAKE) "$$@" < /dev/null || { printf "\n$(_R)make $$*: build failed.$(_N)\n" ; false; } } 8>&1 9>&2; cmd
   endif
-else
-  SUBMAKE=$(MAKE) -w
-
-  define MESSAGE
-    printf "%s\n" "$(1)"
-  endef
 endif

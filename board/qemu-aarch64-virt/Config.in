@@ -1,0 +1,3 @@
+config BOARD_QEMU_AARCH64_VIRT
+	bool "qemu aarch64 virt machine"
+	select PLATFORM_LINUX_LATEST

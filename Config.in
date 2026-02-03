@@ -1,12 +1,9 @@
-
 mainmenu "Linux-Kernel-Lab"
 
-comment "Build Option"
-
-source "kconfig/Config-build.in"
+comment "Board"
+source "output/config-board.in"
 
 comment "Platform"
-
 choice
 	prompt "Platform"
 	config PLATFORM_LINUX_LATEST
