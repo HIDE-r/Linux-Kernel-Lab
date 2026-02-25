@@ -3,7 +3,7 @@ subtarget-dir= $(filter-out ., \
 	$($(1)/builddirs)))
 
 define subtarget
-  $(call warn,$(1),t,Target $(1)/$(2))
+  $(call warn,$(1),t,[Target] $(1)/$(2))
   $(1)/$(2): $($(1)/) $(foreach bd,$(call subtarget-dir,$(1),$(2)),$(1)/$(bd)/$(2))
 endef
 
@@ -31,23 +31,33 @@ log_make = \
 
 # $(1) 目录
 define subdir
-  $(call warn,$(1),d,Dir $(1))
+  $(call warn,$(1),d,[Dir] $(1))
 
   $(foreach bd,$($(1)/builddirs),
-    $(call warn,$(1),d,BuildDir $(1)/$(bd))
+    $(call warn,$(1),d,[BuildDir] $(1)/$(bd))
     $(foreach target, $($(1)/subtargets),
-      $(call warn,$(1)/$(bd),t,Target $(1)/$(bd)/$(target))
+      $(call warn,$(1)/$(bd),t,[BuildTarget] $(1)/$(bd)/$(target))
       $(1)/$(bd)/$(target): $($(1)/$(bd)/$(target)) $(call $(1)//$(target),$(1)/$(bd))
         $(foreach variant,$(filter-out *,$(if $(BUILD_VARIANT),$(BUILD_VARIANT),$(if $(strip $($(1)/$(bd)/variants)),$($(1)/$(bd)/variants),__default))),
 		$(call log_make,$(1)/$(bd),$(target),$(filter-out __default,$(variant))) \
 			|| $(call ERROR,$(1),   ERROR: $(1)/$(bd) failed to build$(if $(filter-out __default,$(variant)), (build variant: $(variant))).) 
         )
+
+      $(call warn,$(1)/$(bd),t,[BuildTarget] $(1)/$(bd)/$(target)/%)
+      $(1)/$(bd)/$(target)/%: $($(1)/$(bd)/$(target)) $(call $(1)//$(target),$(1)/$(bd))
+	$(call log_make,$(1)/$(bd),$(target),$$*) \
+		|| $(call ERROR,$(1),   ERROR: $(1)/$(bd) failed to build (build variant: $$*).)
     )
   )
 
   $(foreach target,$($(1)/subtargets),$(call subtarget,$(1),$(target)))
 endef
 
+# 创建 stampfile 的一系列规则
+#
+# NOTE: 这里 timestamp.pl 用于判断是否有比 stampfile 更新的文件, 如果有, 就执行动作目标, 否则不执行
+#
+# $$(if $(call debug,$(1),v),,.SILENT: $$($(1)/stamp-$(3)))
 # $(1) 目录
 # $(2) 名称
 # $(3) 动作目标
@@ -58,15 +68,12 @@ define stampfile
 
   $$($(1)/stamp-$(3)): $(4)
 	@+$(SCRIPT_DIR)/timestamp.pl -n $$($(1)/stamp-$(3)) $(1) $(4) || \
-		$(MAKE) $(if $(QUIET),--no-print-directory) $$($(1)/flags-$(3)) $(1)/$(3)
+		$(MAKE) $(if $(QUIET),--no-print-directory) $(1)/$(3)
 	@mkdir -p $$$$(dirname $$($(1)/stamp-$(3)))
 	@touch $$($(1)/stamp-$(3))
-
-  $$(if $(call debug,$(1),v),,.SILENT: $$($(1)/stamp-$(3)))
 
   $(1)//clean:=$(1)/stamp-$(3)/clean
   $(1)/stamp-$(3)/clean: FORCE
 	@rm -f $$($(1)/stamp-$(3))
 
 endef
-

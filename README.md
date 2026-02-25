@@ -9,6 +9,11 @@ This project provides a Docker-based environment for compiling the Linux kernel.
 
 ## Getting Started
 
+## Principles
+
+1. Disables the generation of any artifacts in the source file path. Artifacts should be placed in the 'output' directory.
+2. 保证 package 的包所有架构都能构建通过
+
 ### 1. Configure Environment
 
 This project uses a `.envrc` file to manage environment variables. You can either use `direnv` to load it automatically, or source it manually.

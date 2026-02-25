@@ -44,10 +44,12 @@ else
 include $(MK_DIR)/kernel.mk
 include $(MK_DIR)/subdir.mk
 
+include host-tools/Makefile
 include board/Makefile
 include platform/Makefile
+include package/Makefile
 
-world: $(board/stamp-prepare) $(platform/stamp-compile)
+world: $(board/stamp-prepare) $(platform/stamp-compile) $(package/stamp-compile)
 
 
 endif

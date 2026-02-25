@@ -19,11 +19,11 @@ menuconfig: scripts/config/mconf FORCE
 		$(PREP_MK) $(NO_TRACE_MAKE) menuconfig; \
 	fi
 
-$(STAGING_DIR)/config-board.in:
+$(OUTPUT_DIR)/config-board.in:
 	$(Q) $(SCRIPT_DIR)/merge_board_configs.sh
 	$(Q) echo "All Config.in files from 'board/' merged into output/config-board.in"
 
 scan_config_in:
 	$(Q) echo "##### Scan and Generate Config.in files #####"
-	$(Q) $(PREP_MK) $(MAKE) $(NO_PRINT_DIR_MF) $(STAGING_DIR)/config-board.in
+	$(Q) $(PREP_MK) $(MAKE) $(NO_PRINT_DIR_MF) $(OUTPUT_DIR)/config-board.in
 
