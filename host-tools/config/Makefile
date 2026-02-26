@@ -15,10 +15,11 @@ compile: prepare $(addsuffix /compile,$(PKG_VARIANT))
 
 install: $(addsuffix /install,$(PKG_VARIANT))
 
-%onf/compile:
-	$(EMPTY_MF) $(MAKE) -C $(PKG_BUILD_PATH) $*onf
+%/compile:
+	$(EMPTY_MF) $(MAKE) -C $(PKG_BUILD_PATH) $*
 
-nconf/install:
-	echo 1
+%/install:
+	mkdir -p $(STAGING_DIR_HOST)/bin
+	install $(PKG_BUILD_PATH)/$* $(STAGING_DIR_HOST)/bin
 
 

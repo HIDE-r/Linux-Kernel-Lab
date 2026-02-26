@@ -21,7 +21,6 @@ dockerfile:
 	$(Q) docker build -f $(TOPDIR)/docker/Dockerfile --build-arg TARGET_ARCH=$(ARCH) -t linux-kernel-lab-$(ARCH) .
 
 distclean: FORCE
-	$(Q) make -C ./scripts/config clean
 	$(Q) rm -rf .config* output/
 
 PARALLEL_OR_QUIET=$(if $(BUILD_LOG),,$(or \
@@ -50,6 +49,8 @@ include platform/Makefile
 include package/Makefile
 
 world: $(board/stamp-prepare) $(platform/stamp-compile) $(package/stamp-compile)
+
+download: FORCE platform/download package/download
 
 
 endif
