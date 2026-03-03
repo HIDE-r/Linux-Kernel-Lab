@@ -1,5 +1,7 @@
 mainmenu "Linux-Kernel-Lab"
 
+source "kconfig/Config-build.in"
+
 comment "Board"
 source "output/config-board.in"
 

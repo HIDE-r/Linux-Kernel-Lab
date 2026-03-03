@@ -14,10 +14,14 @@ endif
 ifeq ($(IS_TTY),1)
   ifeq ($(strip $(COLOR_TTY)),1)
     _Y:=\\033[33m
+    _C:=\\033[36m
     _R:=\\033[31m
     _N:=\\033[m
   endif
 endif
+
+PRINT_CMD=print_cmd() { { printf "$(_C)==> %s$(_N)\n" "$$1" >&8 || printf "$(_C)==> %s$(_N)\n" "$$1"; } 2>/dev/null; }; print_cmd
+MAKE_WRAP=sh -c 'cmdline="$(MAKE) $$*"; $(PRINT_CMD) "$$cmdline"; $(MAKE) "$$@"' _
 
 ifeq ($(findstring s,$(VERBOSE)),s)
   SUBMAKE=$(MAKE) -w

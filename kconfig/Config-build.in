@@ -1,4 +1,12 @@
 menu "Global build settings"
+	config EXTERNAL_DL_DIR
+		string "External download cache directory"
+		default ""
+		help
+		  Optional absolute/relative path for downloaded source tarballs.
+		  Relative paths are resolved from the project root (TOPDIR).
+		  Leave empty to use default output/dl.
+
 	config BUILD_QUIET
 		bool "build quietly"
 		default y

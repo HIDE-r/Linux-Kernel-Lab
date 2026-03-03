@@ -1,69 +1,152 @@
-# ARM64 Linux Kernel Test Environment
+# Linux Kernel Lab
 
-This project provides a Docker-based environment for compiling the Linux kernel. It simplifies the setup process by providing a pre-configured Docker image with all the necessary tools and dependencies.
+一个类似 OpenWrt 风格的分层构建实验项目：
+- 统一把产物放在 `output/`，不污染源码目录
+- 通过 `host-tools/`、`board/`、`platform/`、`package/` 分阶段构建
+- 支持本机构建与 Docker 构建
 
-## Prerequisites
+## 目录说明
 
-- Docker
-- direnv (optional, for managing environment variables)
+- `makefiles/`: 顶层构建规则与公共宏
+- `host-tools/`: 宿主工具构建（如 `config/mconf`）
+- `board/`: 板级配置
+- `platform/`: 平台源码下载/编译（当前是 Linux 6.18.9）
+- `package/`: 软件包下载/编译（当前含 busybox）
+- `scripts/`: 辅助脚本（如 `staging_env.sh`）
+- `docker/`: Dockerfile 与容器启动脚本
+- `output/`: 构建输出目录（下载、构建中间件、staging 等）
 
-## Getting Started
+## 环境要求
 
-## Principles
+最少需要：
+- `make`
+- GNU toolchain（含 `gcc`/`g++`）
+- `wget`、`tar`、`xz`、`bzip2`
+- `perl`（时间戳脚本会用到）
+- `ncurses` 开发库（`menuconfig` 需要）
 
-1. Disables the generation of any artifacts in the source file path. Artifacts should be placed in the 'output' directory.
-2. 保证 package 的包所有架构都能构建通过
+交叉编译环境变量必须设置：
+- `ARCH`（例如 `arm64`）
+- `CROSS_COMPILE`（例如 `aarch64-linux-gnu-`）
 
-### 1. Configure Environment
+可选下载缓存目录：
+- `CONFIG_EXTERNAL_DL_DIR`（在 `.config` 中设置，默认空，空时使用 `output/dl`）
+  - 绝对路径：直接使用
+  - 相对路径：相对于项目根目录解析
+- `DL_DIR`（命令行临时覆盖，优先级高于 `.config`）
 
-This project uses a `.envrc` file to manage environment variables. You can either use `direnv` to load it automatically, or source it manually.
+## 快速开始（本机）
 
-Create a `.envrc` file in the project root with the following content.
+1. 加载环境变量（示例）
 
 ```bash
 export ARCH=arm64
-export DOCKER_IAMGE=kernel_${ARCH}
-export PROJECT_DIR_PATH="$PWD"
-export DOCKERFILE=docker/Dockerfile
-export DOCKER_ENV_FILE=docker/docker_${ARCH}.env
+export CROSS_COMPILE=aarch64-linux-gnu-
 ```
 
-If you are using `direnv`, run `direnv allow` to load the environment variables.
+或使用仓库自带 `.envrc`（配合 `direnv`）。
 
-### 2. Build the Docker Image
+2. 生成/选择配置
 
-The Docker image contains all the necessary dependencies for building the kernel. The `scripts/docker_run.sh` script will automatically build the image for you if it doesn't exist.
-
-To manually build the image:
-
-```shell
-docker build -t arm64-kernel-builder -f docker/Dockerfile .
+```bash
+make menuconfig
 ```
 
-### 3. Build the Kernel
+3. 执行完整构建
 
-To build the kernel, simply run the following command. The `scripts/docker_run.sh` script will execute the build process inside the Docker container.
-
-```shell
-./scripts/docker_run.sh make -C linux -j$(nproc)
+```bash
+make world -j"$(nproc)"
 ```
 
-This command will:
-1. Start a Docker container using the `arm64-kernel-builder` image.
-2. Mount the project directory into the container.
-3. Execute the `make` command inside the `linux` directory to build the kernel.
+如需提前下载（避免编译阶段联网）：
 
-### 4. Enter the Docker Environment
-
-You can also get an interactive shell inside the container for debugging or running other commands:
-
-```shell
-./scripts/docker_run.sh
+```bash
+make download
 ```
 
-## Project Structure
+使用外部下载目录：
 
-- `linux/`: Contains the Linux kernel source code.
-- `busybox/`: Contains the BusyBox source code, which provides a lightweight set of common Unix utilities.
-- `docker/`: Contains the `Dockerfile` for building the development environment.
-- `scripts/`: Contains helper scripts for building and running the environment.
+```bash
+make download DL_DIR=/path/to/shared-dl
+```
+
+也可以通过配置文件持久化（推荐）：
+
+```bash
+make menuconfig
+# Global build settings -> External download cache directory
+```
+
+## 常用目标
+
+- `make menuconfig`: 配置入口
+- `make world`: 执行完整流程（board + platform + package）
+- `make download`: 仅执行 platform/package 下载阶段
+- `make host-tools/compile`: 仅构建 host tools
+- `make platform/compile`: 仅构建 platform
+- `make package/compile`: 仅构建 package
+- `make distclean`: 清理 `.config*` 与 `output/`
+
+失败排查建议：
+- 首次排错用 `make -j1 V=s <target>` 查看完整错误输出
+
+## Docker 用法
+
+1. 先构建镜像
+
+```bash
+export ARCH=arm64
+make dockerfile
+```
+
+2. 在容器里执行构建
+
+```bash
+./docker/docker_run.sh make world -j"$(nproc)"
+```
+
+3. 进入容器交互环境
+
+```bash
+./docker/docker_run.sh
+```
+
+说明：
+- Docker 脚本使用环境变量 `DOCKER_IAMGE`（保留项目里的这个拼写）
+- 可在 `.envrc` 里配置 `DOCKER_IAMGE`、`PROJECT_DIR_PATH`、`DOCKERFILE`、`DOCKER_ENV_FILE`
+
+## staging host 工具优先
+
+用于手工调试时优先使用 `output/staging_dir/host` 下的工具，避免误用宿主机工具。
+
+启用（当前 shell）：
+
+```bash
+source scripts/staging_env.sh
+```
+
+恢复（当前 shell）：
+
+```bash
+source scripts/staging_env.sh --off
+```
+
+仅对单条命令生效：
+
+```bash
+scripts/staging_env.sh --run <cmd> [args...]
+```
+
+查看导出结果：
+
+```bash
+scripts/staging_env.sh --print
+```
+
+## 输出目录约定
+
+- `output/dl/`: 下载缓存（默认，可通过 `DL_DIR` 覆盖）
+- `output/build/`: 构建中间目录
+- `output/staging_dir/host/`: host 工具安装目录
+- `output/staging_dir/<arch>-<board>/rootfs/`: 目标 rootfs staging
+- `output/staging_dir/stamp/`: 各阶段 stamp 文件

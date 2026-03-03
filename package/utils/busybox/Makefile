@@ -17,7 +17,8 @@ download:
 	fi
 
 compile: prepare
-	$(MAKE) -C $(PKG_BUILD_PATH) $(if $(filter busybox,$(PKG_VARIANT)),,$(PKG_VARIANT))
+	echo 'build busybox'
+	# $(MAKE) -C $(PKG_BUILD_PATH) $(if $(filter busybox,$(PKG_VARIANT)),,$(PKG_VARIANT))
 
 install: compile
 	@case "$(PKG_VARIANT)" in \
