@@ -21,4 +21,4 @@ menuconfig: $(STAGING_DIR_HOST)/bin/mconf FORCE
 
 $(OUTPUT_DIR)/config-board.in: FORCE
 	$(Q) echo "All Config.in files from 'board/' merged into output/config-board.in"
-	$(Q) $(SCRIPT_DIR)/merge_board_configs.sh
+	$(Q) $(SCRIPT_DIR)/generate_config_in.sh Board board output/config-board.in

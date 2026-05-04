@@ -1,6 +1,7 @@
 .envrc
 .config*
 output/
+dl/
 
 scripts/config/*.o
 scripts/config/lxdialog/*.o

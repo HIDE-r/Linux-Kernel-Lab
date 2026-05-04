@@ -4,6 +4,7 @@ source "kconfig/Config-build.in"
 
 comment "Board"
 source "output/config-board.in"
+source "kconfig/Config-board.in"
 
 comment "Platform"
 choice

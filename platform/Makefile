@@ -10,4 +10,5 @@ $(curdir)/linux_latest/prepare:= $(curdir)/linux_latest/download
 endif
 
 $(eval $(call stampfile,$(curdir),platform,compile))
+$(eval $(call stampfile,$(curdir),platform,install))
 $(eval $(call subdir,$(curdir)))

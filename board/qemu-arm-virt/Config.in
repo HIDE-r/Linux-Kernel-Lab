@@ -1,3 +1,0 @@
-config BOARD_QEMU_ARM_VIRT
-	bool "qemu arm virt machine"
-	select PLATFORM_LINUX_LATEST

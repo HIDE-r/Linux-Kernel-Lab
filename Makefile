@@ -29,6 +29,7 @@ PARALLEL_OR_QUIET=$(if $(BUILD_LOG),,$(or \
     $(filter-out -j1,$(filter -j%,$(MAKEFLAGS))), \
     $(if $(findstring s,$(VERBOSE)),,1)))
 
+# NOTE: 其他目标应有规则, 否则会被当成伪目标, 导致每次执行make时都执行以下规则
 %::
 	$(Q)$(R) $(PREP_MK) $(MAKE_WRAP) $(MF_NO_BUILTIN_RULES) prereq
 	$(Q) echo "##### build target = $@ #####"
@@ -41,7 +42,7 @@ else
 # 真正的执行动作
 
 #  NOTE: 每一层make都会重新include这些文件
--include $(TOPDIR)/.config
+include $(TOPDIR)/.config
 export $(filter CONFIG_%,$(.VARIABLES))
 
 include $(MK_DIR)/kernel.mk
@@ -52,7 +53,15 @@ include board/Makefile
 include platform/Makefile
 include package/Makefile
 
-world: $(board/stamp-prepare) $(host-tools/stamp-compile) $(platform/stamp-compile) $(package/stamp-compile)
+world: board host-tools platform package
+
+board: $(board/stamp-prepare) 
+
+host-tools: $(host-tools/stamp-compile) $(host-tools/stamp-install)
+
+platform: $(platform/stamp-compile) $(platform/stamp-install)
+
+package: $(package/stamp-compile) $(package/stamp-install)
 
 download: FORCE platform/download package/download
 
